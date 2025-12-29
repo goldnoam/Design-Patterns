@@ -23,6 +23,7 @@ const Layout: React.FC<LayoutProps> = ({
   useEffect(() => {
     const handleScroll = () => {
       if (mainRef.current) {
+        // Toggle visibility based on scroll position of the main container
         setShowScrollTop(mainRef.current.scrollTop > 300);
       }
     };
@@ -35,7 +36,12 @@ const Layout: React.FC<LayoutProps> = ({
   }, []);
 
   const scrollToTop = () => {
-    mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mainRef.current) {
+      mainRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
   };
 
   return (
