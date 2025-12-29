@@ -1,10 +1,14 @@
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @layer base {
   body {
-    font-family: 'Inter', sans-serif;
+    @apply font-sans;
   }
   code, pre {
-    font-family: 'Fira Code', monospace;
+    @apply font-mono;
   }
 }
 
@@ -13,12 +17,11 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  @apply bg-slate-950;
 }
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 9999px;
+  @apply bg-slate-800 rounded-full transition-colors;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  @apply bg-slate-700;
 }

@@ -15,8 +15,3 @@ export interface DesignPattern {
   cons: string[];
   codeExample: string;
 }
-
-export interface SuggestionResult {
-  patternId: string;
-  reasoning: string;
-}

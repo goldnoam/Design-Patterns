@@ -23,8 +23,7 @@ const Layout: React.FC<LayoutProps> = ({
   useEffect(() => {
     const handleScroll = () => {
       if (mainRef.current) {
-        // Toggle visibility based on scroll position of the main container
-        setShowScrollTop(mainRef.current.scrollTop > 300);
+        setShowScrollTop(mainRef.current.scrollTop > 400);
       }
     };
 
@@ -58,6 +57,7 @@ const Layout: React.FC<LayoutProps> = ({
           <button 
             onClick={toggleTheme}
             className="p-2 md:hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-600 dark:text-slate-300"
+            aria-label="Toggle theme"
           >
             {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
@@ -111,8 +111,8 @@ const Layout: React.FC<LayoutProps> = ({
       </nav>
 
       {/* Main Content */}
-      <main ref={mainRef} className="flex-1 bg-white dark:bg-slate-950 overflow-y-auto relative scroll-smooth">
-        <div className="max-w-6xl mx-auto p-6 md:p-10">
+      <main ref={mainRef} className="flex-1 bg-white dark:bg-slate-950 overflow-y-auto relative scroll-smooth h-screen">
+        <div className="max-w-6xl mx-auto p-6 md:p-10 min-h-screen">
           {children}
         </div>
 
@@ -121,9 +121,9 @@ const Layout: React.FC<LayoutProps> = ({
           onClick={scrollToTop}
           className={`fixed bottom-8 right-8 z-50 p-4 rounded-full shadow-2xl transition-all duration-500 ease-in-out transform ${
             showScrollTop 
-              ? 'opacity-100 translate-y-0 scale-100' 
-              : 'opacity-0 translate-y-10 scale-50 pointer-events-none'
-          } bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 flex items-center justify-center group`}
+              ? 'opacity-100 translate-y-0 scale-100 cursor-pointer' 
+              : 'opacity-0 translate-y-12 scale-50 pointer-events-none'
+          } bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 flex items-center justify-center group active:scale-95`}
           aria-label="Go to top"
         >
           <ArrowUp size={24} className="group-hover:-translate-y-1 transition-transform duration-300" />
