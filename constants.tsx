@@ -70,21 +70,261 @@ public:
     }
 };
 
-// Client code demonstrating pattern usage
-void ClientCode(const AbstractFactory& factory) {
-    auto productA = factory.CreateProductA();
-    auto productB = factory.CreateProductB();
-    std::cout << "Client: " << productA->UsefulFunctionA() << std::endl;
-    std::cout << "Client: " << productB->UsefulFunctionB() << std::endl;
+// Client code
+int main() {
+    ConcreteFactory1 factory;
+    auto pA = factory.CreateProductA();
+    std::cout << pA->UsefulFunctionA() << std::endl;
+    return 0;
+}`
+  },
+  {
+    id: 'raii',
+    name: 'RAII',
+    category: PatternCategory.STRUCTURAL,
+    description: 'Resource Acquisition Is Initialization: A C++ programming technique which binds the life cycle of a resource to the lifetime of an object.',
+    whenToUse: [
+      'Managing memory (smart pointers).',
+      'Managing file handles, sockets, or database connections.',
+      'Managing mutex locks in multi-threaded environments.'
+    ],
+    pros: [
+      'Exception safety: resources are released even if an exception is thrown.',
+      'Prevents resource leaks (memory, file handles).',
+      'Encapsulates resource management logic.'
+    ],
+    cons: [
+      'Requires disciplined use of classes for all resource management.'
+    ],
+    codeExample: `#include <iostream>
+#include <fstream>
+#include <string>
+
+class FileHandler {
+    std::fstream file;
+public:
+    FileHandler(const std::string& filename) {
+        file.open(filename, std::ios::out);
+        std::cout << "Resource Acquired: File opened.\\n";
+    }
+    
+    ~FileHandler() {
+        if (file.is_open()) {
+            file.close();
+            std::cout << "Resource Released: File closed.\\n";
+        }
+    }
+    
+    void write(const std::string& text) {
+        file << text;
+    }
+};
+
+int main() {
+    {
+        FileHandler handler("test.txt");
+        handler.write("Hello RAII!");
+    } // handler goes out of scope here, file is closed automatically
+    return 0;
+}`
+  },
+  {
+    id: 'crtp',
+    name: 'CRTP',
+    category: PatternCategory.STRUCTURAL,
+    description: 'Curiously Recurring Template Pattern: A C++ idiom where a class derived from a class template uses itself as a template argument.',
+    whenToUse: [
+      'Static polymorphism (compile-time method dispatch).',
+      'Adding common functionality to multiple classes without virtual function overhead.',
+      'Implementing "mixins".'
+    ],
+    pros: [
+      'No runtime overhead (no vtable).',
+      'Compile-time checks.',
+      'Optimizable by the compiler (inlining).'
+    ],
+    cons: [
+      'Increases binary size due to template instantiation.',
+      'More complex syntax and error messages.'
+    ],
+    codeExample: `#include <iostream>
+
+template <typename Derived>
+class Base {
+public:
+    void interface() {
+        // Static dispatch to the derived class
+        static_cast<Derived*>(this)->implementation();
+    }
+};
+
+class Derived1 : public Base<Derived1> {
+public:
+    void implementation() {
+        std::cout << "Derived1 Implementation\\n";
+    }
+};
+
+class Derived2 : public Base<Derived2> {
+public:
+    void implementation() {
+        std::cout << "Derived2 Implementation\\n";
+    }
+};
+
+template <typename T>
+void execute(Base<T>& obj) {
+    obj.interface();
 }
 
 int main() {
-    std::cout << "Testing client code with the first factory type:\\n";
-    ConcreteFactory1 factory1;
-    ClientCode(factory1);
-    
+    Derived1 d1;
+    Derived2 d2;
+    execute(d1);
+    execute(d2);
     return 0;
 }`
+  },
+  {
+    id: 'object-pool',
+    name: 'Object Pool',
+    category: PatternCategory.CREATIONAL,
+    description: 'Uses a set of initialized objects kept in a ready-to-use "pool" rather than destroying and re-creating them on demand.',
+    whenToUse: [
+      'When object creation is expensive (e.g., database connections).',
+      'When there is a high frequency of creation and destruction of identical objects.',
+      'In performance-critical loops.'
+    ],
+    pros: [
+      'Significant performance boost for expensive objects.',
+      'Predictable memory footprint.',
+      'Reduces heap fragmentation.'
+    ],
+    cons: [
+      'Pool itself occupies memory even when idle.',
+      'Objects must be correctly reset before reuse.'
+    ],
+    codeExample: `#include <vector>
+#include <memory>
+
+class Resource {
+public:
+    void reset() { /* Clear state */ }
+    void use() { /* Logic */ }
+};
+
+class ResourcePool {
+    std::vector<std::unique_ptr<Resource>> pool;
+public:
+    std::unique_ptr<Resource> acquire() {
+        if (pool.empty()) {
+            return std::make_unique<Resource>();
+        }
+        auto res = std::move(pool.back());
+        pool.pop_back();
+        return res;
+    }
+    
+    void release(std::unique_ptr<Resource> res) {
+        res->reset();
+        pool.push_back(std::move(res));
+    }
+};`
+  },
+  {
+    id: 'null-object',
+    name: 'Null Object',
+    category: PatternCategory.BEHAVIORAL,
+    description: 'Provides an object as a surrogate for the lack of an object of a given type.',
+    whenToUse: [
+      'To avoid repetitive "if (ptr != nullptr)" checks throughout the code.',
+      'When you want to provide default "do nothing" behavior safely.'
+    ],
+    pros: [
+      'Cleaner client code.',
+      'Reduces risk of null pointer exceptions.',
+      'Simplifies logic by treating nulls and real objects uniformly.'
+    ],
+    cons: [
+      'Can hide errors that should have been handled as missing dependencies.'
+    ],
+    codeExample: `#include <iostream>
+#include <memory>
+
+class Logger {
+public:
+    virtual ~Logger() = default;
+    virtual void log(const std::string& msg) = 0;
+};
+
+class ConsoleLogger : public Logger {
+public:
+    void log(const std::string& msg) override {
+        std::cout << "Log: " << msg << "\\n";
+    }
+};
+
+class NullLogger : public Logger {
+public:
+    void log(const std::string& msg) override {
+        /* Do nothing */
+    }
+};
+
+class Service {
+    std::unique_ptr<Logger> logger;
+public:
+    Service(std::unique_ptr<Logger> l) : logger(std::move(l)) {}
+    void run() {
+        logger->log("Service is running"); // No null check needed
+    }
+};`
+  },
+  {
+    id: 'factory-method',
+    name: 'Factory Method',
+    category: PatternCategory.CREATIONAL,
+    description: 'Provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created.',
+    whenToUse: [
+      'When a class can\'t anticipate the class of objects it must create.',
+      'When a class wants its subclasses to specify the objects it creates.'
+    ],
+    pros: [
+      'Avoids tight coupling between creator and concrete products.',
+      'Single Responsibility Principle.',
+      'Open/Closed Principle.'
+    ],
+    cons: [
+      'Can lead to many subclasses.'
+    ],
+    codeExample: `class Product {
+public:
+    virtual ~Product() {}
+    virtual std::string Operation() const = 0;
+};
+
+class ConcreteProduct1 : public Product {
+public:
+    std::string Operation() const override { return "Result of ConcreteProduct1"; }
+};
+
+class Creator {
+public:
+    virtual ~Creator() {}
+    virtual Product* FactoryMethod() const = 0;
+
+    std::string SomeOperation() const {
+        Product* product = this->FactoryMethod();
+        std::string result = "Creator: " + product->Operation();
+        delete product;
+        return result;
+    }
+};
+
+class ConcreteCreator1 : public Creator {
+public:
+    Product* FactoryMethod() const override { return new ConcreteProduct1(); }
+};`
   },
   {
     id: 'singleton',
@@ -127,79 +367,6 @@ public:
 };
 
 Singleton* Singleton::instance = nullptr;`
-  },
-  {
-    id: 'lazy-init',
-    name: 'Lazy Initialization',
-    category: PatternCategory.CREATIONAL,
-    description: 'Delays the creation of an object until the first time it is needed.',
-    whenToUse: [
-      'When the object is expensive to create and might not be used at all.',
-      'To reduce startup time.'
-    ],
-    pros: [
-      'Improves application startup performance.',
-      'Saves resources if objects are never used.'
-    ],
-    cons: [
-      'Slight performance hit on first access.',
-      'Potential thread-safety issues if not carefully implemented.'
-    ],
-    codeExample: `class ExpensiveObject {
-public:
-    ExpensiveObject() { /* Intense work */ }
-    void Use() { std::cout << "Using object\\n"; }
-};
-
-class LazyWrapper {
-private:
-    std::unique_ptr<ExpensiveObject> instance;
-public:
-    ExpensiveObject* getInstance() {
-        if (!instance) {
-            instance = std::make_unique<ExpensiveObject>();
-        }
-        return instance.get();
-    }
-};`
-  },
-  {
-    id: 'pimpl',
-    name: 'Pimpl (Pointer to Impl)',
-    category: PatternCategory.STRUCTURAL,
-    description: 'Removes implementation details from a class header by placing them in a separate class, accessed via a pointer.',
-    whenToUse: [
-      'To reduce compilation times by breaking header dependencies.',
-      'To provide a stable Binary Interface (ABI).'
-    ],
-    pros: [
-      'Compilation firewall: private changes don\'t trigger client recompile.',
-      'Improved encapsulation.'
-    ],
-    cons: [
-      'Extra indirection slightly affects performance.',
-      'Management of the implementation object lifetime.'
-    ],
-    codeExample: `// Widget.h
-class Widget {
-public:
-    Widget();
-    ~Widget();
-    void DoSomething();
-private:
-    class Impl;
-    std::unique_ptr<Impl> pImpl;
-};
-
-// Widget.cpp
-class Widget::Impl {
-public:
-    void InternalMethod() { /* ... */ }
-};
-
-Widget::Widget() : pImpl(std::make_unique<Impl>()) {}
-Widget::~Widget() = default;
-void Widget::DoSomething() { pImpl->InternalMethod(); }`
   },
   {
     id: 'builder',
@@ -245,6 +412,43 @@ public:
         Product* result = this->product;
         this->Reset();
         return result;
+    }
+};`
+  },
+  {
+    id: 'prototype',
+    name: 'Prototype',
+    category: PatternCategory.CREATIONAL,
+    description: 'Lets you copy existing objects without making your code dependent on their classes.',
+    whenToUse: [
+      'When your code shouldn\'t depend on the concrete classes of objects that you need to copy.',
+      'To reduce the number of subclasses that only differ in their initial state.'
+    ],
+    pros: [
+      'Clone objects without coupling to concrete classes.',
+      'Avoid repeated initialization code.',
+      'Produce complex objects more conveniently.'
+    ],
+    cons: [
+      'Cloning complex objects with circular references is tricky.'
+    ],
+    codeExample: `class Prototype {
+public:
+    virtual ~Prototype() {}
+    virtual Prototype* clone() const = 0;
+    virtual void Method() = 0;
+};
+
+class ConcretePrototype : public Prototype {
+private:
+    float state;
+public:
+    ConcretePrototype(float s) : state(s) {}
+    Prototype* clone() const override {
+        return new ConcretePrototype(*this);
+    }
+    void Method() override {
+        std::cout << "State: " << state << "\\n";
     }
 };`
   },
