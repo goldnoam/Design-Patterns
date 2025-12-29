@@ -1,15 +1,11 @@
+/* Base styles provided by Tailwind CDN in index.html */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+body {
+  font-family: 'Inter', sans-serif;
+}
 
-@layer base {
-  body {
-    @apply font-sans;
-  }
-  code, pre {
-    @apply font-mono;
-  }
+code, pre {
+  font-family: 'Fira Code', monospace;
 }
 
 /* Custom Scrollbar */
@@ -17,11 +13,18 @@
   width: 8px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-slate-950;
+  background: #020617; /* slate-950 */
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-800 rounded-full transition-colors;
+  background: #1e293b; /* slate-800 */
+  border-radius: 9999px;
+  transition: background-color 0.2s;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-700;
+  background: #334155; /* slate-700 */
+}
+
+/* Ensure smooth scrolling for the Go to Top button */
+.scroll-smooth {
+  scroll-behavior: smooth;
 }
