@@ -1,16 +1,22 @@
 
 import React from 'react';
-import { Book, Cpu, Sparkles, Code2, Github, Sun, Moon } from 'lucide-react';
+import { Book, Cpu, Github, Sun, Moon, Bookmark } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeTab: 'patterns' | 'ai' | 'explain';
-  setActiveTab: (tab: 'patterns' | 'ai' | 'explain') => void;
+  activeTab: 'patterns' | 'bookmarks';
+  setActiveTab: (tab: 'patterns' | 'bookmarks') => void;
   isDarkMode: boolean;
   toggleTheme: () => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isDarkMode, toggleTheme }) => {
+const Layout: React.FC<LayoutProps> = ({ 
+  children, 
+  activeTab, 
+  setActiveTab, 
+  isDarkMode, 
+  toggleTheme 
+}) => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen transition-colors duration-300">
       {/* Sidebar */}
@@ -44,27 +50,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, isDa
           </button>
 
           <button
-            onClick={() => setActiveTab('ai')}
+            onClick={() => setActiveTab('bookmarks')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
-              activeTab === 'ai' 
-                ? 'bg-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-600/20 dark:border-purple-600/30' 
+              activeTab === 'bookmarks' 
+                ? 'bg-rose-600/10 text-rose-600 dark:text-rose-400 border border-rose-600/20 dark:border-rose-600/30' 
                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
-            <Sparkles size={20} />
-            <span className="font-medium">Pattern Suggestor</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('explain')}
-            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
-              activeTab === 'explain' 
-                ? 'bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-600/20 dark:border-emerald-600/30' 
-                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Code2 size={20} />
-            <span className="font-medium">Code Explainer</span>
+            <Bookmark size={20} />
+            <span className="font-medium">Bookmarks</span>
           </button>
         </div>
 

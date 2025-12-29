@@ -1,14 +1,16 @@
 
 import React from 'react';
 import { DesignPattern, PatternCategory } from '../types';
-import { ChevronRight, Layers, Boxes, Workflow } from 'lucide-react';
+import { ChevronRight, Layers, Boxes, Workflow, Bookmark } from 'lucide-react';
 
 interface PatternCardProps {
   pattern: DesignPattern;
   onClick: (pattern: DesignPattern) => void;
+  isBookmarked?: boolean;
+  onBookmarkToggle?: (id: string) => void;
 }
 
-const PatternCard: React.FC<PatternCardProps> = ({ pattern, onClick }) => {
+const PatternCard: React.FC<PatternCardProps> = ({ pattern, onClick, isBookmarked, onBookmarkToggle }) => {
   const getIcon = () => {
     switch(pattern.category) {
       case PatternCategory.CREATIONAL: return <Boxes className="text-blue-500 dark:text-blue-400" size={20} />;
@@ -25,18 +27,37 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onClick }) => {
     }
   };
 
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onBookmarkToggle) {
+      onBookmarkToggle(pattern.id);
+    }
+  };
+
   return (
     <div 
       onClick={() => onClick(pattern)}
-      className="group bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-blue-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800/50 transition-all shadow-md hover:shadow-xl flex flex-col h-full"
+      className="group bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 cursor-pointer hover:border-blue-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800/50 transition-all shadow-md hover:shadow-xl flex flex-col h-full relative"
     >
       <div className="flex justify-between items-start mb-4">
         <div className="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
           {getIcon()}
         </div>
-        <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${getCategoryColor()}`}>
-          {pattern.category}
-        </span>
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={handleBookmark}
+            className={`p-1.5 rounded-lg border transition-all ${
+              isBookmarked 
+                ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' 
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+            }`}
+          >
+            <Bookmark size={16} fill={isBookmarked ? "currentColor" : "none"} />
+          </button>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border ${getCategoryColor()}`}>
+            {pattern.category}
+          </span>
+        </div>
       </div>
       
       <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -62,7 +83,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onClick }) => {
             <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">Cons</span>
             <div className="flex flex-wrap gap-1">
               {pattern.cons.map((_, i) => (
-                <div key={i} className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8_rgba(244,63,94,0.4)]" title="Pattern Con" />
+                <div key={i} className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]" title="Pattern Con" />
               ))}
             </div>
           </div>

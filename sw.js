@@ -4,6 +4,7 @@ const ASSETS = [
   '/',
   '/index.html',
   '/index.tsx',
+  '/index.css',
   '/App.tsx',
   '/types.ts',
   '/constants.tsx',
