@@ -40,14 +40,14 @@ public:
 class ConcreteProductA1 : public AbstractProductA {
 public:
     std::string UsefulFunctionA() const override {
-        return "Result of Product A1.";
+        return "Result of ConcreteProductA1.";
     }
 };
 
 class ConcreteProductB1 : public AbstractProductB {
 public:
     std::string UsefulFunctionB() const override {
-        return "Result of Product B1.";
+        return "Result of ConcreteProductB1.";
     }
 };
 
@@ -70,459 +70,163 @@ public:
     }
 };
 
-// Client code
 int main() {
+    std::cout << "Usage of Abstract Factory (Factory 1):\\n";
     ConcreteFactory1 factory;
     auto pA = factory.CreateProductA();
+    auto pB = factory.CreateProductB();
     std::cout << pA->UsefulFunctionA() << std::endl;
+    std::cout << pB->UsefulFunctionB() << std::endl;
     return 0;
 }`
+  },
+  {
+    id: 'bridge',
+    name: 'Bridge',
+    category: PatternCategory.STRUCTURAL,
+    description: 'Decouples an abstraction from its implementation so that the two can vary independently.',
+    whenToUse: [
+      'When you want to avoid a permanent binding between an abstraction and its implementation.',
+      'When both abstractions and their implementations should be extensible by subclassing.'
+    ],
+    pros: [
+      'Separation of interface and implementation.',
+      'Improved extensibility.',
+      'Hiding implementation details from clients.'
+    ],
+    cons: [
+      'Increased complexity.'
+    ],
+    codeExample: `class Device {
+public:
+    virtual ~Device() = default;
+    virtual void setEnabled(bool enabled) = 0;
+    virtual bool isEnabled() = 0;
+};
+
+class Radio : public Device {
+    bool on = false;
+public:
+    void setEnabled(bool enabled) override { on = enabled; }
+    bool isEnabled() override { return on; }
+};
+
+class RemoteControl {
+protected:
+    Device* device;
+public:
+    RemoteControl(Device* dev) : device(dev) {}
+    void togglePower() {
+        device->setEnabled(!device->isEnabled());
+    }
+};`
+  },
+  {
+    id: 'decorator',
+    name: 'Decorator',
+    category: PatternCategory.STRUCTURAL,
+    description: 'Allows behavior to be added to an individual object, dynamically, without affecting the behavior of other objects from the same class.',
+    whenToUse: [
+      'To add responsibilities to individual objects dynamically and transparently.',
+      'When extension by subclassing is impractical.'
+    ],
+    pros: [
+      'More flexibility than static inheritance.',
+      'Avoids feature-laden classes high up in the hierarchy.'
+    ],
+    cons: [
+      'Can result in many small objects that look alike.'
+    ],
+    codeExample: `class Coffee {
+public:
+    virtual ~Coffee() = default;
+    virtual double cost() = 0;
+};
+
+class SimpleCoffee : public Coffee {
+public:
+    double cost() override { return 1.0; }
+};
+
+class CoffeeDecorator : public Coffee {
+protected:
+    Coffee* coffee;
+public:
+    CoffeeDecorator(Coffee* c) : coffee(c) {}
+};
+
+class MilkDecorator : public CoffeeDecorator {
+public:
+    MilkDecorator(Coffee* c) : CoffeeDecorator(c) {}
+    double cost() override { return coffee->cost() + 0.5; }
+};`
+  },
+  {
+    id: 'strategy',
+    name: 'Strategy',
+    category: PatternCategory.BEHAVIORAL,
+    description: 'Enables selecting an algorithm at runtime.',
+    whenToUse: [
+      'When many related classes differ only in their behavior.',
+      'When you need different variants of an algorithm.'
+    ],
+    pros: [
+      'Algorithms are interchangeable.',
+      'Avoids conditional statements for selecting behavior.'
+    ],
+    cons: [
+      'Clients must be aware of different strategies.'
+    ],
+    codeExample: `class Strategy {
+public:
+    virtual ~Strategy() = default;
+    virtual void execute() = 0;
+};
+
+class ConcreteStrategyA : public Strategy {
+public:
+    void execute() override { std::cout << "Strategy A\\n"; }
+};
+
+class Context {
+    Strategy* strategy;
+public:
+    void setStrategy(Strategy* s) { strategy = s; }
+    void run() { strategy->execute(); }
+};`
   },
   {
     id: 'raii',
     name: 'RAII',
     category: PatternCategory.STRUCTURAL,
-    description: 'Resource Acquisition Is Initialization: A C++ programming technique which binds the life cycle of a resource to the lifetime of an object.',
-    whenToUse: [
-      'Managing memory (smart pointers).',
-      'Managing file handles, sockets, or database connections.',
-      'Managing mutex locks in multi-threaded environments.'
-    ],
-    pros: [
-      'Exception safety: resources are released even if an exception is thrown.',
-      'Prevents resource leaks (memory, file handles).',
-      'Encapsulates resource management logic.'
-    ],
-    cons: [
-      'Requires disciplined use of classes for all resource management.'
-    ],
-    codeExample: `#include <iostream>
-#include <fstream>
-#include <string>
-
-class FileHandler {
-    std::fstream file;
+    description: 'Resource Acquisition Is Initialization: manages resource lifetime through object scope.',
+    whenToUse: ['Managing any resource with a strict lifecycle (memory, files, locks).'],
+    pros: ['Exception safety.', 'No manual cleanup.'],
+    cons: ['Requires proper copy/move semantics.'],
+    codeExample: `class MutexLock {
+    std::mutex& m;
 public:
-    FileHandler(const std::string& filename) {
-        file.open(filename, std::ios::out);
-        std::cout << "Resource Acquired: File opened.\\n";
-    }
-    
-    ~FileHandler() {
-        if (file.is_open()) {
-            file.close();
-            std::cout << "Resource Released: File closed.\\n";
-        }
-    }
-    
-    void write(const std::string& text) {
-        file << text;
-    }
-};
-
-int main() {
-    {
-        FileHandler handler("test.txt");
-        handler.write("Hello RAII!");
-    } // handler goes out of scope here, file is closed automatically
-    return 0;
-}`
+    MutexLock(std::mutex& mutex) : m(mutex) { m.lock(); }
+    ~MutexLock() { m.unlock(); }
+};`
   },
   {
     id: 'crtp',
     name: 'CRTP',
     category: PatternCategory.STRUCTURAL,
-    description: 'Curiously Recurring Template Pattern: A C++ idiom where a class derived from a class template uses itself as a template argument.',
-    whenToUse: [
-      'Static polymorphism (compile-time method dispatch).',
-      'Adding common functionality to multiple classes without virtual function overhead.',
-      'Implementing "mixins".'
-    ],
-    pros: [
-      'No runtime overhead (no vtable).',
-      'Compile-time checks.',
-      'Optimizable by the compiler (inlining).'
-    ],
-    cons: [
-      'Increases binary size due to template instantiation.',
-      'More complex syntax and error messages.'
-    ],
-    codeExample: `#include <iostream>
-
-template <typename Derived>
+    description: 'Curiously Recurring Template Pattern: achieves static polymorphism.',
+    whenToUse: ['Compile-time polymorphism to avoid vtable overhead.'],
+    pros: ['Better performance than virtual functions.', 'Mix-in functionality.'],
+    cons: ['Complex syntax.', 'Increased binary size.'],
+    codeExample: `template <typename Derived>
 class Base {
 public:
-    void interface() {
-        // Static dispatch to the derived class
-        static_cast<Derived*>(this)->implementation();
-    }
+    void interface() { static_cast<Derived*>(this)->impl(); }
 };
 
-class Derived1 : public Base<Derived1> {
+class Derived : public Base<Derived> {
 public:
-    void implementation() {
-        std::cout << "Derived1 Implementation\\n";
-    }
-};
-
-class Derived2 : public Base<Derived2> {
-public:
-    void implementation() {
-        std::cout << "Derived2 Implementation\\n";
-    }
-};
-
-template <typename T>
-void execute(Base<T>& obj) {
-    obj.interface();
-}
-
-int main() {
-    Derived1 d1;
-    Derived2 d2;
-    execute(d1);
-    execute(d2);
-    return 0;
-}`
-  },
-  {
-    id: 'object-pool',
-    name: 'Object Pool',
-    category: PatternCategory.CREATIONAL,
-    description: 'Uses a set of initialized objects kept in a ready-to-use "pool" rather than destroying and re-creating them on demand.',
-    whenToUse: [
-      'When object creation is expensive (e.g., database connections).',
-      'When there is a high frequency of creation and destruction of identical objects.',
-      'In performance-critical loops.'
-    ],
-    pros: [
-      'Significant performance boost for expensive objects.',
-      'Predictable memory footprint.',
-      'Reduces heap fragmentation.'
-    ],
-    cons: [
-      'Pool itself occupies memory even when idle.',
-      'Objects must be correctly reset before reuse.'
-    ],
-    codeExample: `#include <vector>
-#include <memory>
-
-class Resource {
-public:
-    void reset() { /* Clear state */ }
-    void use() { /* Logic */ }
-};
-
-class ResourcePool {
-    std::vector<std::unique_ptr<Resource>> pool;
-public:
-    std::unique_ptr<Resource> acquire() {
-        if (pool.empty()) {
-            return std::make_unique<Resource>();
-        }
-        auto res = std::move(pool.back());
-        pool.pop_back();
-        return res;
-    }
-    
-    void release(std::unique_ptr<Resource> res) {
-        res->reset();
-        pool.push_back(std::move(res));
-    }
-};`
-  },
-  {
-    id: 'null-object',
-    name: 'Null Object',
-    category: PatternCategory.BEHAVIORAL,
-    description: 'Provides an object as a surrogate for the lack of an object of a given type.',
-    whenToUse: [
-      'To avoid repetitive "if (ptr != nullptr)" checks throughout the code.',
-      'When you want to provide default "do nothing" behavior safely.'
-    ],
-    pros: [
-      'Cleaner client code.',
-      'Reduces risk of null pointer exceptions.',
-      'Simplifies logic by treating nulls and real objects uniformly.'
-    ],
-    cons: [
-      'Can hide errors that should have been handled as missing dependencies.'
-    ],
-    codeExample: `#include <iostream>
-#include <memory>
-
-class Logger {
-public:
-    virtual ~Logger() = default;
-    virtual void log(const std::string& msg) = 0;
-};
-
-class ConsoleLogger : public Logger {
-public:
-    void log(const std::string& msg) override {
-        std::cout << "Log: " << msg << "\\n";
-    }
-};
-
-class NullLogger : public Logger {
-public:
-    void log(const std::string& msg) override {
-        /* Do nothing */
-    }
-};
-
-class Service {
-    std::unique_ptr<Logger> logger;
-public:
-    Service(std::unique_ptr<Logger> l) : logger(std::move(l)) {}
-    void run() {
-        logger->log("Service is running"); // No null check needed
-    }
-};`
-  },
-  {
-    id: 'factory-method',
-    name: 'Factory Method',
-    category: PatternCategory.CREATIONAL,
-    description: 'Provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created.',
-    whenToUse: [
-      'When a class can\'t anticipate the class of objects it must create.',
-      'When a class wants its subclasses to specify the objects it creates.'
-    ],
-    pros: [
-      'Avoids tight coupling between creator and concrete products.',
-      'Single Responsibility Principle.',
-      'Open/Closed Principle.'
-    ],
-    cons: [
-      'Can lead to many subclasses.'
-    ],
-    codeExample: `class Product {
-public:
-    virtual ~Product() {}
-    virtual std::string Operation() const = 0;
-};
-
-class ConcreteProduct1 : public Product {
-public:
-    std::string Operation() const override { return "Result of ConcreteProduct1"; }
-};
-
-class Creator {
-public:
-    virtual ~Creator() {}
-    virtual Product* FactoryMethod() const = 0;
-
-    std::string SomeOperation() const {
-        Product* product = this->FactoryMethod();
-        std::string result = "Creator: " + product->Operation();
-        delete product;
-        return result;
-    }
-};
-
-class ConcreteCreator1 : public Creator {
-public:
-    Product* FactoryMethod() const override { return new ConcreteProduct1(); }
-};`
-  },
-  {
-    id: 'singleton',
-    name: 'Singleton',
-    category: PatternCategory.CREATIONAL,
-    description: 'Ensures a class has only one instance and provides a global point of access to it.',
-    whenToUse: [
-      'When you need exactly one instance of a class (e.g., Database connection, Logger).',
-      'When you need to provide a global access point to that instance.'
-    ],
-    pros: [
-      'Strict control over instance creation.',
-      'Memory saving by reusing the same instance.',
-      'Delayed initialization (lazy loading).'
-    ],
-    cons: [
-      'Violates Single Responsibility Principle.',
-      'Can hide bad design (global state).',
-      'Difficult to unit test due to global state.'
-    ],
-    codeExample: `class Singleton {
-private:
-    static Singleton* instance;
-    Singleton() {}
-
-public:
-    Singleton(const Singleton&) = delete;
-    Singleton& operator=(const Singleton&) = delete;
-
-    static Singleton* getInstance() {
-        if (instance == nullptr) {
-            instance = new Singleton();
-        }
-        return instance;
-    }
-
-    void doSomething() {
-        std::cout << "Singleton is working!\\n";
-    }
-};
-
-Singleton* Singleton::instance = nullptr;`
-  },
-  {
-    id: 'builder',
-    name: 'Builder',
-    category: PatternCategory.CREATIONAL,
-    description: 'Lets you construct complex objects step by step.',
-    whenToUse: [
-      'To avoid "telescoping constructors" with many parameters.',
-      'When you want to create different representations of some product.'
-    ],
-    pros: [
-      'Construct objects step-by-step.',
-      'Reuse construction code for various representations.'
-    ],
-    cons: [
-      'Increased complexity due to multiple new classes.'
-    ],
-    codeExample: `class Product {
-public:
-    std::vector<std::string> parts_;
-    void ListParts() const {
-        for (const auto& p : parts_) std::cout << p << " ";
-        std::cout << "\\n";
-    }
-};
-
-class Builder {
-public:
-    virtual ~Builder() {}
-    virtual void ProducePartA() const = 0;
-    virtual void ProducePartB() const = 0;
-};
-
-class ConcreteBuilder1 : public Builder {
-private:
-    Product* product;
-public:
-    ConcreteBuilder1() { this->Reset(); }
-    void Reset() { this->product = new Product(); }
-    void ProducePartA() const override { this->product->parts_.push_back("PartA1"); }
-    void ProducePartB() const override { this->product->parts_.push_back("PartB1"); }
-    Product* GetProduct() { 
-        Product* result = this->product;
-        this->Reset();
-        return result;
-    }
-};`
-  },
-  {
-    id: 'prototype',
-    name: 'Prototype',
-    category: PatternCategory.CREATIONAL,
-    description: 'Lets you copy existing objects without making your code dependent on their classes.',
-    whenToUse: [
-      'When your code shouldn\'t depend on the concrete classes of objects that you need to copy.',
-      'To reduce the number of subclasses that only differ in their initial state.'
-    ],
-    pros: [
-      'Clone objects without coupling to concrete classes.',
-      'Avoid repeated initialization code.',
-      'Produce complex objects more conveniently.'
-    ],
-    cons: [
-      'Cloning complex objects with circular references is tricky.'
-    ],
-    codeExample: `class Prototype {
-public:
-    virtual ~Prototype() {}
-    virtual Prototype* clone() const = 0;
-    virtual void Method() = 0;
-};
-
-class ConcretePrototype : public Prototype {
-private:
-    float state;
-public:
-    ConcretePrototype(float s) : state(s) {}
-    Prototype* clone() const override {
-        return new ConcretePrototype(*this);
-    }
-    void Method() override {
-        std::cout << "State: " << state << "\\n";
-    }
-};`
-  },
-  {
-    id: 'adapter',
-    name: 'Adapter',
-    category: PatternCategory.STRUCTURAL,
-    description: 'Allows objects with incompatible interfaces to collaborate.',
-    whenToUse: [
-      'When you want to use some existing class with an incompatible interface.'
-    ],
-    pros: [
-      'Single Responsibility Principle: separate interface conversion from business logic.',
-      'Open/Closed Principle: add new adapters easily.'
-    ],
-    cons: [
-      'Overall code complexity increases.'
-    ],
-    codeExample: `class Target {
-public:
-    virtual ~Target() = default;
-    virtual std::string Request() const { return "Target: Default behavior."; }
-};
-
-class Adaptee {
-public:
-    std::string SpecificRequest() const { return ".eetpadA eht fo roivaheb laicepS"; }
-};
-
-class Adapter : public Target {
-private:
-    Adaptee *adaptee_;
-public:
-    Adapter(Adaptee *adaptee) : adaptee_(adaptee) {}
-    std::string Request() const override {
-        std::string to_reverse = this->adaptee_->SpecificRequest();
-        std::reverse(to_reverse.begin(), to_reverse.end());
-        return "Adapter: (TRANSLATED) " + to_reverse;
-    }
-};`
-  },
-  {
-    id: 'observer',
-    name: 'Observer',
-    category: PatternCategory.BEHAVIORAL,
-    description: 'Defines a subscription mechanism to notify multiple objects about events.',
-    whenToUse: [
-      'When changes to one object require changing others.',
-      'When an abstraction has two aspects, one dependent on the other.'
-    ],
-    pros: [
-      'Runtime relationships between objects.',
-      'Add new subscribers without changing the publisher.'
-    ],
-    cons: [
-      'Subscribers are notified in random order.',
-      'Risk of memory leaks if not detached.'
-    ],
-    codeExample: `class IObserver {
-public:
-    virtual ~IObserver() {}
-    virtual void Update(const std::string &message) = 0;
-};
-
-class Subject {
-public:
-    void Attach(IObserver *obs) { observers.push_back(obs); }
-    void Detach(IObserver *obs) { observers.remove(obs); }
-    void Notify() {
-        for (auto o : observers) o->Update(message);
-    }
-private:
-    std::list<IObserver *> observers;
-    std::string message;
+    void impl() { std::cout << "Derived Impl\\n"; }
 };`
   }
 ];
