@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Book, Cpu, Github, Sun, Moon, Bookmark } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Book, Cpu, Github, Sun, Moon, Bookmark, ArrowUp } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +17,27 @@ const Layout: React.FC<LayoutProps> = ({
   isDarkMode, 
   toggleTheme 
 }) => {
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (mainRef.current) {
+        setShowScrollTop(mainRef.current.scrollTop > 300);
+      }
+    };
+
+    const container = mainRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      return () => container.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
+  const scrollToTop = () => {
+    mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen transition-colors duration-300">
       {/* Sidebar */}
@@ -84,10 +105,23 @@ const Layout: React.FC<LayoutProps> = ({
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 bg-white dark:bg-slate-950 overflow-y-auto">
+      <main ref={mainRef} className="flex-1 bg-white dark:bg-slate-950 overflow-y-auto relative scroll-smooth">
         <div className="max-w-6xl mx-auto p-6 md:p-10">
           {children}
         </div>
+
+        {/* Go to Top Button */}
+        <button
+          onClick={scrollToTop}
+          className={`fixed bottom-8 right-8 z-50 p-4 rounded-full shadow-2xl transition-all duration-500 ease-in-out transform ${
+            showScrollTop 
+              ? 'opacity-100 translate-y-0 scale-100' 
+              : 'opacity-0 translate-y-10 scale-50 pointer-events-none'
+          } bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-800 flex items-center justify-center group`}
+          aria-label="Go to top"
+        >
+          <ArrowUp size={24} className="group-hover:-translate-y-1 transition-transform duration-300" />
+        </button>
       </main>
     </div>
   );
