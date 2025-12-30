@@ -14,4 +14,5 @@ export interface DesignPattern {
   pros: string[];
   cons: string[];
   codeExample: string;
+  visualAidUrl?: string;
 }

@@ -51,6 +51,20 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
+  const handleNavigate = (direction: 'next' | 'prev') => {
+    if (!selectedPattern) return;
+    const currentIndex = filteredPatterns.findIndex(p => p.id === selectedPattern.id);
+    if (currentIndex === -1) return;
+
+    let nextIndex;
+    if (direction === 'next') {
+      nextIndex = (currentIndex + 1) % filteredPatterns.length;
+    } else {
+      nextIndex = (currentIndex - 1 + filteredPatterns.length) % filteredPatterns.length;
+    }
+    setSelectedPattern(filteredPatterns[nextIndex]);
+  };
+
   return (
     <div className={isDarkMode ? 'dark' : ''}>
       <Layout 
@@ -114,7 +128,9 @@ const App: React.FC = () => {
             pattern={selectedPattern} 
             isBookmarked={bookmarks.includes(selectedPattern.id)}
             onBookmarkToggle={toggleBookmark}
-            onClose={() => setSelectedPattern(null)} 
+            onClose={() => setSelectedPattern(null)}
+            onNext={() => handleNavigate('next')}
+            onPrev={() => handleNavigate('prev')}
           />
         )}
       </Layout>

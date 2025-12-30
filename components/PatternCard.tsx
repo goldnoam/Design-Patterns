@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { DesignPattern, PatternCategory } from '../types';
 import { ChevronRight, Layers, Boxes, Workflow, Bookmark } from 'lucide-react';
@@ -49,7 +48,7 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onClick, isBookmarke
             className={`p-1.5 rounded-lg border transition-all ${
               isBookmarked 
                 ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' 
-                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:text-600 dark:hover:text-slate-200'
             }`}
           >
             <Bookmark size={16} fill={isBookmarked ? "currentColor" : "none"} />
@@ -68,22 +67,38 @@ const PatternCard: React.FC<PatternCardProps> = ({ pattern, onClick, isBookmarke
         {pattern.description}
       </p>
 
-      {/* Trade-off Indicators */}
+      {/* Trade-off Indicators with Custom Tooltips */}
       <div className="pt-4 mt-auto border-t border-slate-200 dark:border-slate-800/50 mb-4">
         <div className="flex flex-wrap gap-4">
           <div className="flex flex-col space-y-1">
             <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">Pros</span>
             <div className="flex flex-wrap gap-1">
-              {pattern.pros.map((_, i) => (
-                <div key={i} className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" title="Pattern Pro" />
+              {pattern.pros.map((pro, i) => (
+                <div key={i} className="group/tooltip relative">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)] cursor-help" />
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block z-[100] pointer-events-none">
+                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1.5 rounded-lg shadow-2xl border border-slate-700 min-w-[120px] max-w-[200px] whitespace-normal leading-tight animate-in fade-in slide-in-from-bottom-1 duration-200">
+                      {pro}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
           <div className="flex flex-col space-y-1">
             <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 dark:text-slate-500">Cons</span>
             <div className="flex flex-wrap gap-1">
-              {pattern.cons.map((_, i) => (
-                <div key={i} className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]" title="Pattern Con" />
+              {pattern.cons.map((con, i) => (
+                <div key={i} className="group/tooltip relative">
+                  <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)] cursor-help" />
+                  <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover/tooltip:block z-[100] pointer-events-none">
+                    <div className="bg-slate-800 text-white text-[10px] px-2 py-1.5 rounded-lg shadow-2xl border border-slate-700 min-w-[120px] max-w-[200px] whitespace-normal leading-tight animate-in fade-in slide-in-from-bottom-1 duration-200">
+                      {con}
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-slate-800" />
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
